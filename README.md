@@ -1,2 +1,1 @@
-# survey-analysis
-:card_file_box: Analysis of Stackoverflow Developer Survey using R
+# :card_file_box: Stackoverflow Developer Survey Analysis using R
