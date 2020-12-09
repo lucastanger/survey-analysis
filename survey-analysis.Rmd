@@ -28,7 +28,7 @@ library(RColorBrewer)
 
 ```{r}
 # load dataset
-survey <- read.csv(file = 'survey_results_public.csv')
+survey <- read.csv(file = 'data/survey_results_public.csv')
 
 # Show first 5 entries of dataset
 survey[1:5,]
