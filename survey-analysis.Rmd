@@ -1,0 +1,90 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+```{r}
+if (!require('plyr')) {
+  install.packages("plyr", dependencies = T)
+  require("plyr")
+  
+  install.packages(c("cowplot", "googleway", "ggplot2", "ggrepel", "ggspatial", "libwgeom", "sf", "rnaturalearth", "rnaturalearthdata"))
+}
+
+library("ggplot2")
+theme_set(theme_bw())
+library("sf")
+
+library("rnaturalearth")
+library("rnaturalearthdata")
+
+# Library for Map Colorization
+library(RColorBrewer)
+
+```
+
+```{r}
+# load dataset
+survey <- read.csv(file = 'survey_results_public.csv')
+
+# Show first 5 entries of dataset
+survey[1:5,]
+
+```
+
+```{r}
+# Load world data
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+# Create dataframe with all available countries
+worldframe <- data.frame(x = world$name)
+
+# Create dataframe with all survey countries
+df1 <- data.frame(count(survey$Country))
+
+# Join both dataframes together
+world$surveyPop <- join(worldframe, df1, by='x')
+
+# Change NA to 0
+world$surveyPop[is.na(world$surveyPop)] <- 0
+```
+
+
+```{r}
+# Plot world map
+worldpopmap <- ggplot(data=world) +
+  # Set plot title
+  ggtitle("World map", subtitle = paste0("(", length(unique(world$name)), " countries)")) +
+  # Set x and y label
+  xlab("Longitude") + ylab("Latitude") +
+  # Fill worldmap with summarized survey data
+  geom_sf(aes(fill = world$surveyPop$freq)) +
+  # Scale colors
+  scale_fill_viridis_c(option = "plasma", trans = "sqrt") +
+  # Customize legend title
+  labs(fill = 'Frequency')
+
+# display map
+worldpopmap
+
+```
+
+
+
+
+
+```{r}
+# Show previously plotted data in numbers
+arrange(count(survey$Country), -freq)
+```
+```{r}
+arrange(count(survey$EdLevel), -freq)
+```
+
+
+```{r}
+
+```
