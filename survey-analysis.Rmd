@@ -24,6 +24,8 @@ library("rnaturalearthdata")
 # Library for Map Colorization
 library(RColorBrewer)
 
+library(forcats)
+
 ```
 
 ```{r}
@@ -81,10 +83,17 @@ worldpopmap
 arrange(count(survey$Country), -freq)
 ```
 ```{r}
-arrange(count(survey$EdLevel), -freq)
-```
+# Educational Attainment
+edu <- arrange(count(survey$EdLevel), -freq)
 
+edu <- na.omit(edu)
 
-```{r}
+edu %>%
+  # mutate(freq = fct_reorder(factor(freq), desc(x))) %>%
+  ggplot( aes(x=x, y=freq)) + 
+    geom_bar(stat='identity') +
+    xlab("") +
+    coord_flip() +
+    theme_bw()
 
 ```
