@@ -26,6 +26,11 @@ library(RColorBrewer)
 
 library(forcats)
 
+if(!require(rgeos)) {
+  install.packages("rgeos", dependencies = T)
+  require(rgeos)
+}
+
 ```
 
 ```{r}
@@ -54,6 +59,7 @@ world$surveyPop <- join(worldframe, df1, by='x')
 world$surveyPop[is.na(world$surveyPop)] <- 0
 ```
 
+# Geography
 
 ```{r}
 # Plot world map
@@ -74,16 +80,25 @@ worldpopmap
 
 ```
 
-
-
-
-
 ```{r}
 # Show previously plotted data in numbers
 arrange(count(survey$Country), -freq)
 ```
+
+# Developer Roles
+
 ```{r}
+
+df <- data.frame(survey$DevType)
+
+df
+
+```
+
+
+
 # Educational Attainment
+```{r}
 edu <- arrange(count(survey$EdLevel), -freq)
 
 edu <- na.omit(edu)
@@ -97,3 +112,19 @@ edu %>%
     theme_bw()
 
 ```
+
+
+
+```{r}
+
+
+
+```
+
+
+
+
+
+
+
+
