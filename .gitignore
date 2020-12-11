@@ -47,3 +47,6 @@ vignettes/*.pdf
 
 # Local History for Visual Studio Code
 .history/
+
+# Locally stored data
+data/
