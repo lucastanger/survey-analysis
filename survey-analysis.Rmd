@@ -7,6 +7,9 @@ output:
 ---
 
 ```{r}
+
+rm(list=ls())
+
 if (!require('plyr')) {
   install.packages("plyr", dependencies = T)
   require("plyr")
@@ -34,11 +37,16 @@ if(!require(rgeos)) {
 ```
 
 ```{r}
+
+source('load_data.R')
+
+so_20[1:5,]
+
 # load dataset
-survey <- read.csv(file = 'data/survey_results_public.csv')
+# survey <- read.csv(file = 'data/survey_results_public.csv')
 
 # Show first 5 entries of dataset
-survey[1:5,]
+# survey[1:5,]
 
 ```
 
@@ -50,7 +58,7 @@ world <- ne_countries(scale = "medium", returnclass = "sf")
 worldframe <- data.frame(x = world$name)
 
 # Create dataframe with all survey countries
-df1 <- data.frame(count(survey$Country))
+df1 <- data.frame(count(so_20$Country))
 
 # Join both dataframes together
 world$surveyPop <- join(worldframe, df1, by='x')
@@ -82,14 +90,14 @@ worldpopmap
 
 ```{r}
 # Show previously plotted data in numbers
-arrange(count(survey$Country), -freq)
+arrange(count(so_20$Country), -freq)
 ```
 
 # Developer Roles
 
 ```{r}
 
-df <- data.frame(survey$DevType)
+df <- data.frame(so_20$DevType)
 
 df
 
@@ -99,7 +107,7 @@ df
 
 # Educational Attainment
 ```{r}
-edu <- arrange(count(survey$EdLevel), -freq)
+edu <- arrange(count(so_20$EdLevel), -freq)
 
 edu <- na.omit(edu)
 
