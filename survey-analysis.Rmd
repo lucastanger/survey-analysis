@@ -58,7 +58,13 @@ world <- ne_countries(scale = "medium", returnclass = "sf")
 worldframe <- data.frame(x = world$name)
 
 # Create dataframe with all survey countries
-df1 <- data.frame(count(so_20$Country))
+df1 <- so_20 %>% count(Country)
+
+# Rename col for joining
+df1 <- df1 %>%
+  rename(
+    x = Country
+  )
 
 # Join both dataframes together
 world$surveyPop <- join(worldframe, df1, by='x')
@@ -77,7 +83,7 @@ worldpopmap <- ggplot(data=world) +
   # Set x and y label
   xlab("Longitude") + ylab("Latitude") +
   # Fill worldmap with summarized survey data
-  geom_sf(aes(fill = world$surveyPop$freq)) +
+  geom_sf(aes(fill = world$surveyPop$n)) +
   # Scale colors
   scale_fill_viridis_c(option = "plasma", trans = "sqrt") +
   # Customize legend title
@@ -90,7 +96,11 @@ worldpopmap
 
 ```{r}
 # Show previously plotted data in numbers
-arrange(count(so_20$Country), -freq)
+
+so_20 %>% 
+  count(Country) %>%
+    arrange(-n)
+
 ```
 
 # Developer Roles
@@ -107,17 +117,17 @@ df
 
 # Educational Attainment
 ```{r}
-edu <- arrange(count(so_20$EdLevel), -freq)
+
+edu <- so_20 %>% count(EdLevel) %>% arrange(-n)
 
 edu <- na.omit(edu)
 
 edu %>%
   # mutate(freq = fct_reorder(factor(freq), desc(x))) %>%
-  ggplot( aes(x=x, y=freq)) + 
+  ggplot( aes(x=EdLevel, y=n)) + 
     geom_bar(stat='identity') +
     xlab("") +
-    coord_flip() +
-    theme_bw()
+    coord_flip()
 
 ```
 
