@@ -162,6 +162,66 @@ hobby %>%
     coord_flip()
 ```
 
+# Experience
+
+```{r}
+
+exp <- so_20 %>% count(YearsCode)
+
+# Remove NA
+exp <- exp %>% na.omit(exp)
+
+# Select less than 1 year col
+#ltone <- exp[grep('Less', exp$YearsCode),]
+
+# Select more than 50 year col
+#mtf <- exp[grep('More', exp$YearsCode),]
+
+# Select first 50 cols (without the string cols)
+#exp <- exp[1:50,]
+
+# Create new dataframe for storage
+newExp <- data.frame()
+  
+
+# Convert data to a numerical column
+exp$nYearsCode <- as.integer(exp$YearsCode)
+exp[grep('Less', exp$YearsCode),]$nYearsCode <- 0
+exp[grep('More', exp$YearsCode),]$nYearsCode <- 50
+
+# Select data relted for plotting
+
+newExp['Less than 5 years', 'n'] <- (exp %>% filter(nYearsCode < 5))$n %>% sum() 
+newExp['5 to 9 years', 'n'] <- (exp %>% filter(between(nYearsCode, 5, 9)))$n %>% sum()
+newExp['10 to 14 years', 'n'] <- (exp %>% filter(between(nYearsCode, 10, 14)))$n %>% sum()
+newExp['15 to 19 years', 'n'] <- (exp %>% filter(between(nYearsCode, 15, 19)))$n %>% sum()
+newExp['20 to 24 years', 'n'] <- (exp %>% filter(between(nYearsCode, 20, 24)))$n %>% sum()
+newExp['25 to 29 years', 'n'] <- (exp %>% filter(between(nYearsCode, 25, 29)))$n %>% sum()
+newExp['30 to 34 years', 'n'] <- (exp %>% filter(between(nYearsCode, 30, 34)))$n %>% sum()
+newExp['35 to 39 years', 'n'] <- (exp %>% filter(between(nYearsCode, 35, 39)))$n %>% sum()
+newExp['40 to 44 years', 'n'] <- (exp %>% filter(between(nYearsCode, 40, 45)))$n %>% sum()
+newExp['45 to 49 years', 'n'] <- (exp %>% filter(between(nYearsCode, 45, 49)))$n %>% sum()
+newExp['50 years or more', 'n'] <- (exp %>% filter(nYearsCode >= 50))$n %>% sum() 
+
+#
+#between_c(exp, exp$YearsCode, 5, 9)$n
+
+# Compute percentages
+newExp$perc <- perc(newExp$n, sum(exp$n))
+
+# Move idx names to a col
+newExp$desc <- rownames(newExp)
+
+# TODO fix order of plotting
+# newExp$desc <- factor(newExp$desc, levels= newExp$desc[order(newExp$perc)])
+
+newExp %>%
+  ggplot( aes(x= rownames(newExp), y= perc)) + 
+    geom_bar(stat='identity') +
+    xlab("") +
+    coord_flip()
+
+```
 
 
 
