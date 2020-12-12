@@ -38,17 +38,31 @@ if(!require(rgeos)) {
 
 ```{r}
 
+# load dataset
 source('load_data.R')
 
+# Show first 5 entries of dataset
 so_20[1:5,]
 
-# load dataset
-# survey <- read.csv(file = 'data/survey_results_public.csv')
+```
+# Initial Assessment
+```{r}
 
-# Show first 5 entries of dataset
-# survey[1:5,]
+sprintf('The 2020 survey had %d respondents and %d variables.', dim(so_20)[1], dim(so_20)[2])
+
+head(so_20_schema)
 
 ```
+
+
+```{r}
+
+# load functions
+
+source('functions.R')
+
+```
+
 
 ```{r}
 # Load world data
@@ -131,12 +145,21 @@ edu %>%
 
 ```
 
-
+# Coding as a hobby
 
 ```{r}
 
+# Get hobbyist data
+hobby <- so_20 %>% count(Hobbyist)
 
+# Compute percentage
+hobby$perc <- perc(hobby$n, length(so_20$Hobbyist))
 
+hobby %>%
+  ggplot( aes(x= Hobbyist, y= perc)) + 
+    geom_bar(stat='identity') +
+    xlab("") +
+    coord_flip()
 ```
 
 
