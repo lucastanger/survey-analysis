@@ -18,7 +18,7 @@ if (!require('plyr')) {
 }
 
 library("ggplot2")
-theme_set(theme_bw())
+theme_set(theme_dark())
 library("sf")
 
 library("rnaturalearth")
@@ -118,7 +118,7 @@ so_20 %>%
 ```
 
 # Developer Roles
-
+About 55% of respondents identify as full-stack developers, and about 20% consider themselves mobile developers. The median number of developer type identifications per respondent this year is three, and the most common combinations include back-end, front-end, and full-stack developer. Pairs that are highly correlated include database administrator and system administrator, DevOps specialist and site reliability engineer, academic researcher and scientist, and designer and front-end developer.
 ```{r}
 
 df <- data.frame(so_20$DevType)
@@ -127,27 +127,12 @@ df
 
 ```
 
+## Coding as a hobby
 
-
-# Educational Attainment
-```{r}
-
-edu <- so_20 %>% count(EdLevel) %>% arrange(-n)
-
-edu <- na.omit(edu)
-
-edu %>%
-  # mutate(freq = fct_reorder(factor(freq), desc(x))) %>%
-  ggplot( aes(x=EdLevel, y=n)) + 
-    geom_bar(stat='identity') +
-    xlab("") +
-    coord_flip()
-
-```
-
-# Coding as a hobby
+Many developers work on code outside of work. About 78% of our respondents say that they code as a hobby. Other responsibilities outside of software can reduce developers' engagement in coding as a hobby; developers who say they have children or other caretaking responsibilities are less likely to code as a hobby. Respondents who are women are also less likely to say they code as a hobby.
 
 ```{r}
+# TODO Respondents who are women are also less likely to say they code as a hobby.
 
 # Get hobbyist data
 hobby <- so_20 %>% count(Hobbyist)
@@ -159,10 +144,14 @@ hobby %>%
   ggplot( aes(x= Hobbyist, y= perc)) + 
     geom_bar(stat='identity') +
     xlab("") +
-    coord_flip()
+    coord_flip() +
+    labs(y = 'Percentage', title= 'Coding as a Hobby')
 ```
 
 # Experience
+## Years since Learning to Code
+
+There is a wide range of experience among developers who visit Stack Overflow, from seasoned developers who learned to code more than 30 years ago (approximately 15%), to a sizable percentage of developers (17%) who learned how to code less than five years ago. Of the professional developers on Stack Overflow, approximately 40% learned to code less than 10 years ago.
 
 ```{r}
 
@@ -219,11 +208,58 @@ newExp %>%
   ggplot( aes(x= rownames(newExp), y= perc)) + 
     geom_bar(stat='identity') +
     xlab("") +
-    coord_flip()
+    coord_flip() + 
+    labs(y = 'Percentage', title='Years since learning to Code')
 
 ```
 
 
+## Years of Professional Coding Experience by Developer Type
+Technical executives and engineering managers tend to have the most professional coding experience. Among the individual contributor roles, the most experienced developers tend to be system administrators, database administrators, and developers who create desktop and embedded applications. On the other end of the spectrum, web developers, academic researchers, and data scientists tend to have fewer years of experience. Part of this could be explained by the proliferation of coding bootcamps that teach web development and the amount of data scientists entering the field from academia.
+
+```{r}
+# test
+```
+
+## Writing That First Line of Code
+Of all of the respondents, over 54% wrote their first line of code, whether it was a web page or a hello world program, by the age of 16. People who wrote their first line of code in their 20s accounted for 13% of the respondents. When looking at the average age by country, respondents from countries such as Brazil and India tend to start writing code a full two years later compared to developers in countries such as Poland and Germany, who on average start coding by the age of 15.
+
+```{r}
+#test
+```
+
+
+# Education
+## Educational Attainment
+Approximately 75% of respondents worldwide completed at least the equivalent of a bachelor's degree or higher. This is consistent with what we've seen in previous years.
+
+```{r}
+
+edu <- so_20 %>% count(EdLevel) %>% arrange(-n)
+
+edu <- na.omit(edu)
+
+edu %>%
+  # mutate(freq = fct_reorder(factor(freq), desc(x))) %>%
+  ggplot( aes(x=EdLevel, y=n)) + 
+    geom_bar(stat='identity') +
+    xlab("") +
+    coord_flip() +
+    labs(y = 'Cumulative Number', title= 'Educational Attainment')
+
+```
+
+## Undergraduate Major
+There are a variety of academic paths to becoming a professional software developer. Of the respondents that write code professionally and studied at the university level, over 62% have a degree in computer science, computer engineering, or software engineering and just under 10% have a degree in another engineering field. Interestingly enough, almost 10% of the respondents have a business related degree or a degree in a humanities, social science, or fine arts field of study.
+
+```{r}
+# test
+```
+
+
+```{r}
+# https://insights.stackoverflow.com/survey/2020#developer-profile-developer-type-united-states-unweighted
+```
 
 
 
