@@ -50,3 +50,4 @@ vignettes/*.pdf
 
 # Locally stored data
 data/
+.RDataTmp
