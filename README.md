@@ -10,14 +10,16 @@
 
 ## About
 
-# Prerequisites
+This repository contains a comprehensive analysis of the 2020 Stack Overflow Developer Survey. The original survey evaluation can be found [here](https://insights.stackoverflow.com/survey/2020). The primary scope of the analysis emerged out of a study project lecture. 
 
-# Built with :hammer_and_wrench:
+## Prerequisites
+
+## Built with :hammer_and_wrench:
 
 - [R](https://www.r-project.org) - Statistical Programming Language
 - [R-Studio](https://rstudio.com/) - IDE for R
 
-# Author :busts_in_silhouette:
+## Author :busts_in_silhouette:
 
 -   **Luca Stanger** - Project Owner - [Student @ DHBW Stuttgart](https://www.dhbw-stuttgart.de/home/)
 
@@ -37,10 +39,10 @@ If you find this code useful in your research, please consider citing:
     (Stanger, Luca 2021). Stack Overflow Developer Survey - A comprehensive Analysis using R. GitHub.
     https://github.com/lucastanger/survey-analysis.
     
-# Copyright :copyright:
+## Copyright :copyright:
 
 Copyright :copyright: 2021, Luca Stanger
 
-# License :page_facing_up:
+## License :page_facing_up:
 
 This project is licensed under the **MIT License** - see the [LICENSE.MD](https://github.com/lucastanger/survey-analysis/blob/main/LICENSE) file for details
