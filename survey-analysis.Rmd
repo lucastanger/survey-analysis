@@ -8,31 +8,7 @@ output:
 
 ```{r}
 
-rm(list=ls())
-
-if (!require('plyr')) {
-  install.packages("plyr", dependencies = T)
-  require("plyr")
-  
-  install.packages(c("cowplot", "googleway", "ggplot2", "ggrepel", "ggspatial", "libwgeom", "sf", "rnaturalearth", "rnaturalearthdata"))
-}
-
-library("ggplot2")
-theme_set(theme_dark())
-library("sf")
-
-library("rnaturalearth")
-library("rnaturalearthdata")
-
-# Library for Map Colorization
-library(RColorBrewer)
-
-library(forcats)
-
-if(!require(rgeos)) {
-  install.packages("rgeos", dependencies = T)
-  require(rgeos)
-}
+source('requirements.R')
 
 ```
 
@@ -45,6 +21,30 @@ source('load_data.R')
 so_20[1:5,]
 
 ```
+
+```{r}
+skim(so_20$CompTotal)
+
+sm_dt <- so_20 %>%
+  filter(Country == "United States",
+         Employment == "Employed full-time") %>%
+  sample_n(200)
+
+test <- sm_dt %>%
+  mutate(langs = strsplit(LanguageWorkedWith, ";")) %>%
+  unnest(cols = c(langs)) %>%
+  group_by(id) %>%
+  filter(langs != "Other(s):") %>%
+  mutate(LanguageWorkedWith_count=n()) %>%
+  select(-langs) %>%
+  distinct() %>%
+  select(id, LanguageWorkedWith, LanguageWorkedWith_count) 
+
+test
+
+```
+
+
 # Initial Assessment
 ```{r}
 
