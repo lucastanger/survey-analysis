@@ -11,7 +11,7 @@ output:
 source('requirements.R')
 
 # load dataset
-source('load_data.R')
+source('db.R')
 
 # load functions
 source('functions.R')
