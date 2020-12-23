@@ -51,3 +51,7 @@ vignettes/*.pdf
 # Locally stored data
 data/
 .RDataTmp
+database/new_schema_survey_results_public.sql
+database/new_schema_survey_results_schema.sql
+raw_data/survey_results_public.csv
+raw_data/survey_results_schema.csv
