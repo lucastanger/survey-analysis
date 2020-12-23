@@ -6,63 +6,40 @@ output:
   pdf_document: default
 ---
 
-```{r}
+```{r, setup, include=FALSE}
 
 source('requirements.R')
-
-```
-
-```{r}
 
 # load dataset
 source('load_data.R')
 
-# Show first 5 entries of dataset
-so_20[1:5,]
+# load functions
+source('functions.R')
+
+# get queries
+source('queries.R')
 
 ```
 
 ```{r}
-skim(so_20$CompTotal)
+# Show first 5 entries of dataset
+so_20 <- dbGetByQuery("SELECT * FROM survey_results_public LIMIT 5")
 
-sm_dt <- so_20 %>%
-  filter(Country == "United States",
-         Employment == "Employed full-time") %>%
-  sample_n(200)
+so_20_schema <- dbGetByQuery("SELECT * FROM survey_results_schema LIMIT 5")
 
-test <- sm_dt %>%
-  mutate(langs = strsplit(LanguageWorkedWith, ";")) %>%
-  unnest(cols = c(langs)) %>%
-  group_by(id) %>%
-  filter(langs != "Other(s):") %>%
-  mutate(LanguageWorkedWith_count=n()) %>%
-  select(-langs) %>%
-  distinct() %>%
-  select(id, LanguageWorkedWith, LanguageWorkedWith_count) 
+so_20[1:5,]
 
-test
-
+# TODO: Plot histogram?
 ```
-
 
 # Initial Assessment
 ```{r}
 
-sprintf('The 2020 survey had %d respondents and %d variables.', dim(so_20)[1], dim(so_20)[2])
+#sprintf('The 2020 survey had %d respondents and %d variables.', dim(so_20)[1], dim(so_20)[2])
 
-head(so_20_schema)
-
-```
-
-
-```{r}
-
-# load functions
-
-source('functions.R')
+#head(so_20_schema)
 
 ```
-
 
 ```{r}
 # Load world data
@@ -121,9 +98,22 @@ so_20 %>%
 About 55% of respondents identify as full-stack developers, and about 20% consider themselves mobile developers. The median number of developer type identifications per respondent this year is three, and the most common combinations include back-end, front-end, and full-stack developer. Pairs that are highly correlated include database administrator and system administrator, DevOps specialist and site reliability engineer, academic researcher and scientist, and designer and front-end developer.
 ```{r}
 
-df <- data.frame(so_20$DevType)
+devTypes <- dbGetByCol(
+  col = "DevType"
+)
 
-df
+dT_split <- strsplit(devTypes$DevType, split=";")
+dT_flatten <- unlist(dT_split)
+dT <- data.frame(matrix(dT_flatten))
+
+colnames(dT) <- colnames(devTypes)
+
+dT %>% 
+  ggplot( aes(x = fct_infreq(DevType))) + 
+    geom_bar()+ 
+    xlab("Dev Type") +
+    coord_flip() +
+    labs(y = 'Count', title= 'Developer Types')
 
 ```
 
@@ -134,8 +124,11 @@ Many developers work on code outside of work. About 78% of our respondents say t
 ```{r}
 # TODO Respondents who are women are also less likely to say they code as a hobby.
 
-# Get hobbyist data
-hobby <- so_20 %>% count(Hobbyist)
+hobby <- dbGetByCol(
+  col = "Hobbyist"
+)
+
+hobby <- hobby %>% count(Hobbyist)
 
 # Compute percentage
 hobby$perc <- perc(hobby$n, length(so_20$Hobbyist))
@@ -155,24 +148,13 @@ There is a wide range of experience among developers who visit Stack Overflow, f
 
 ```{r}
 
-exp <- so_20 %>% count(YearsCode)
-
-# Remove NA
-exp <- exp %>% na.omit(exp)
-
-# Select less than 1 year col
-#ltone <- exp[grep('Less', exp$YearsCode),]
-
-# Select more than 50 year col
-#mtf <- exp[grep('More', exp$YearsCode),]
-
-# Select first 50 cols (without the string cols)
-#exp <- exp[1:50,]
+exp <- dbGetByCol(
+  col = "YearsCode"
+)
 
 # Create new dataframe for storage
 newExp <- data.frame()
   
-
 # Convert data to a numerical column
 exp$nYearsCode <- as.integer(exp$YearsCode)
 exp[grep('Less', exp$YearsCode),]$nYearsCode <- 0
@@ -225,7 +207,67 @@ Technical executives and engineering managers tend to have the most professional
 Of all of the respondents, over 54% wrote their first line of code, whether it was a web page or a hello world program, by the age of 16. People who wrote their first line of code in their 20s accounted for 13% of the respondents. When looking at the average age by country, respondents from countries such as Brazil and India tend to start writing code a full two years later compared to developers in countries such as Poland and Germany, who on average start coding by the age of 15.
 
 ```{r}
-#test
+fcode <- dbGetByCol(
+  col = "Age1stCode"
+)
+
+newFCode <- data.frame()
+
+# Convert data to a numerical column
+fcode$nAge1stCode <- as.integer(fcode$Age1stCode)
+
+
+fcode
+
+# Make string col readable
+fcode[grep('Younger', fcode$Age1stCode),]$nAge1stCode <- 10
+fcode[grep('Older', fcode$Age1stCode),]$nAge1stCode <- 30
+
+# Select data related for plotting
+
+newFCode['Younger than 10 years', 'n'] <- (fcode %>% filter(nAge1stCode < 10))$n %>% sum()
+newFCode['10 to 11 years old', 'n'] <- (fcode %>% filter(between(nAge1stCode, 10, 11)))$n %>% sum()
+newFCode['12 to 13 years old', 'n'] <- (fcode %>% filter(between(nAge1stCode, 12, 13)))$n %>% sum()
+newFCode['14 to 15 years old', 'n'] <- (fcode %>% filter(between(nAge1stCode, 14, 15)))$n %>% sum()
+newFCode['16 to 17 years old', 'n'] <- (fcode %>% filter(between(nAge1stCode, 16, 17)))$n %>% sum()
+newFCode['18 to 19 years old', 'n'] <- (fcode %>% filter(between(nAge1stCode, 18, 19)))$n %>% sum()
+newFCode['20 to 21 years old', 'n'] <- (fcode %>% filter(between(nAge1stCode, 20, 21)))$n %>% sum()
+newFCode['22 to 23 years old', 'n'] <- (fcode %>% filter(between(nAge1stCode, 22, 23)))$n %>% sum()
+newFCode['24 to 25 years old', 'n'] <- (fcode %>% filter(between(nAge1stCode, 24, 25)))$n %>% sum()
+newFCode['26 to 27 years old', 'n'] <- (fcode %>% filter(between(nAge1stCode, 26, 27)))$n %>% sum()
+newFCode['28 to 29 years old', 'n'] <- (fcode %>% filter(between(nAge1stCode, 28, 29)))$n %>% sum()
+newFCode['30 years old or older', 'n'] <- (fcode %>% filter(nAge1stCode >= 30))$n %>% sum() 
+
+# Print sum of rows to check if all rows have been added
+newFCode %>% sum()
+
+#
+#between_c(exp, exp$YearsCode, 5, 9)$n
+
+# Compute percentages
+newFCode$perc <- perc(newFCode$n, sum(fcode$n))
+
+# Move idx names to a col
+newFCode$desc <- rownames(newFCode)
+
+# TODO fix order of plotting
+# newExp$desc <- factor(newExp$desc, levels= newExp$desc[order(newExp$perc)])
+
+newFCode %>%
+  ggplot( aes(x= rownames(newFCode), y= perc)) + 
+    geom_bar(stat='identity') +
+    xlab("") +
+    coord_flip() + 
+    labs(y = 'Percentage', title='Writing That First Line of Code')
+```
+```{r}
+fcode_country <- data.frame(so_20$Age1stCode, so_20$Country)
+
+fcode_country <- fcode_country %>% na.omit(fcode_country)
+
+fcode_country
+
+# aggregate(fcode_country, by=list(fcode_country$so_20.Age1stCode), FUN=sum)
 ```
 
 
@@ -235,17 +277,17 @@ Approximately 75% of respondents worldwide completed at least the equivalent of 
 
 ```{r}
 
-edu <- so_20 %>% count(EdLevel) %>% arrange(-n)
+edu <- dbGetByCol(
+  col = "EdLevel"
+)
 
-edu <- na.omit(edu)
-
-edu %>%
-  # mutate(freq = fct_reorder(factor(freq), desc(x))) %>%
-  ggplot( aes(x=EdLevel, y=n)) + 
-    geom_bar(stat='identity') +
-    xlab("") +
-    coord_flip() +
-    labs(y = 'Cumulative Number', title= 'Educational Attainment')
+edu %>% 
+  count(EdLevel) %>% 
+    ggplot( aes(x=EdLevel, y=n)) + 
+      geom_bar(stat='identity') +
+      xlab("") +
+      coord_flip() +
+      labs(y = 'Cumulative Number', title= 'Educational Attainment')
 
 ```
 
