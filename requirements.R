@@ -4,6 +4,7 @@ if (!require('plyr')) {
   install.packages("plyr", dependencies = T)
   require("plyr")
   
+  install.packages("DBI")
   install.packages(c("cowplot", "googleway", "ggplot2", "ggrepel", "ggspatial", "libwgeom", "sf", "rnaturalearth", "rnaturalearthdata"))
 }
 
@@ -25,3 +26,14 @@ if(!require(rgeos)) {
   install.packages("rgeos", dependencies = T)
   require(rgeos)
 }
+
+if(!require(tidyverse)) {
+  install.packages("tidyverse", dependencies = T)
+  require(tidyverse)
+}
+
+library(odbc)
+
+require('DBI')
+
+library(scales)
