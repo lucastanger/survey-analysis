@@ -8,8 +8,7 @@ if (!require('plyr')) {
   install.packages(c("cowplot", "googleway", "ggplot2", "ggrepel", "ggspatial", "libwgeom", "sf", "rnaturalearth", "rnaturalearthdata"))
 }
 
-library("ggplot2")
-theme_set(theme_classic())
+
 library("sf")
 
 library("rnaturalearth")
@@ -36,4 +35,10 @@ library(odbc)
 
 require('DBI')
 
+# Plotting
 library(scales)
+library('ggthemes')
+library("ggplot2")
+
+theme_set(theme_gray())
+
