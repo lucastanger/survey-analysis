@@ -49,16 +49,20 @@ world <- ne_countries(scale = "medium", returnclass = "sf")
 worldframe <- data.frame(x = world$name)
 
 # Create dataframe with all survey countries
-df1 <- so_20 %>% count(Country)
+countries <- dbGetByCol(
+  col = "Country"
+)
+
+countries <- countries %>% count(Country)
 
 # Rename col for joining
-df1 <- df1 %>%
+countries <- countries %>%
   rename(
     x = Country
   )
 
 # Join both dataframes together
-world$surveyPop <- join(worldframe, df1, by='x')
+world$surveyPop <- join(worldframe, countries, by='x')
 
 # Change NA to 0
 world$surveyPop[is.na(world$surveyPop)] <- 0
@@ -88,9 +92,8 @@ worldpopmap
 ```{r}
 # Show previously plotted data in numbers
 
-so_20 %>% 
-  count(Country) %>%
-    arrange(-n)
+countries %>%
+  arrange(-n)
 
 ```
 
@@ -110,7 +113,7 @@ colnames(dT) <- colnames(devTypes)
 
 dT %>% 
   ggplot( aes(x = fct_infreq(DevType))) + 
-    geom_bar()+ 
+    geom_bar(fill='steelblue')+ 
     xlab("Dev Type") +
     coord_flip() +
     labs(y = 'Count', title= 'Developer Types')
@@ -122,23 +125,43 @@ dT %>%
 Many developers work on code outside of work. About 78% of our respondents say that they code as a hobby. Other responsibilities outside of software can reduce developers' engagement in coding as a hobby; developers who say they have children or other caretaking responsibilities are less likely to code as a hobby. Respondents who are women are also less likely to say they code as a hobby.
 
 ```{r}
-# TODO Respondents who are women are also less likely to say they code as a hobby.
-
 hobby <- dbGetByCol(
   col = "Hobbyist"
 )
 
-hobby <- hobby %>% count(Hobbyist)
+hobby <- dbGetByQuery("SELECT 
+Hobbyist, 
+count(Hobbyist) as CountHobbyist, 
+Gender 
+FROM new_schema.survey_results_public
+WHERE
+Gender = 'Woman' or
+Gender = 'Man'
+group by 
+Hobbyist,
+Gender;
+")
 
-# Compute percentage
-hobby$perc <- perc(hobby$n, length(so_20$Hobbyist))
+hobby[,"CountHobbyist"] <- as.integer(hobby[,"CountHobbyist"])
 
-hobby %>%
-  ggplot( aes(x= Hobbyist, y= perc)) + 
-    geom_bar(stat='identity') +
-    xlab("") +
-    coord_flip() +
-    labs(y = 'Percentage', title= 'Coding as a Hobby')
+hobby <- hobby %>% mutate(pct = prop.table(CountHobbyist))
+
+# Create reusable plot without data
+gg_hobby <- ggplot(data = data.frame(), aes(x = Hobbyist, 
+                                            y = CountHobbyist, 
+                                            fill=Gender,
+                                            label= scales::percent(pct))) +
+  geom_col(position = 'dodge') + 
+  geom_text(position = position_dodge(width = .9),    # move to center of bars
+              vjust = -0.5,    # nudge above top of bar
+              size = 3) + 
+  labs(x = 'Hobbyist', y = NULL, fill='Gender', title='Amount of Hobbyists by Gender')
+
+# Add data after
+gg_hobby %+%
+  hobby
+
+
 ```
 
 # Experience
@@ -187,8 +210,9 @@ newExp$desc <- rownames(newExp)
 # newExp$desc <- factor(newExp$desc, levels= newExp$desc[order(newExp$perc)])
 
 newExp %>%
-  ggplot( aes(x= rownames(newExp), y= perc)) + 
-    geom_bar(stat='identity') +
+  mutate(desc = fct_reorder(desc, desc(-n))) %>%
+  ggplot(aes(x= desc, y= perc)) + 
+    geom_bar(stat='identity', fill='steelblue') +
     xlab("") +
     coord_flip() + 
     labs(y = 'Percentage', title='Years since learning to Code')
@@ -241,33 +265,28 @@ newFCode['30 years old or older', 'n'] <- (fcode %>% filter(nAge1stCode >= 30))$
 # Print sum of rows to check if all rows have been added
 newFCode %>% sum()
 
-#
-#between_c(exp, exp$YearsCode, 5, 9)$n
-
 # Compute percentages
 newFCode$perc <- perc(newFCode$n, sum(fcode$n))
 
 # Move idx names to a col
 newFCode$desc <- rownames(newFCode)
 
-# TODO fix order of plotting
-# newExp$desc <- factor(newExp$desc, levels= newExp$desc[order(newExp$perc)])
-
 newFCode %>%
-  ggplot( aes(x= rownames(newFCode), y= perc)) + 
-    geom_bar(stat='identity') +
+  mutate(desc = fct_reorder(desc, desc(-n))) %>%
+  ggplot( aes(x= desc, y= perc)) + 
+    geom_bar(stat='identity', fill='steelblue') +
     xlab("") +
     coord_flip() + 
     labs(y = 'Percentage', title='Writing That First Line of Code')
 ```
 ```{r}
+
 fcode_country <- data.frame(so_20$Age1stCode, so_20$Country)
 
 fcode_country <- fcode_country %>% na.omit(fcode_country)
 
 fcode_country
 
-# aggregate(fcode_country, by=list(fcode_country$so_20.Age1stCode), FUN=sum)
 ```
 
 
@@ -282,9 +301,10 @@ edu <- dbGetByCol(
 )
 
 edu %>% 
-  count(EdLevel) %>% 
+  count(EdLevel) %>%
+  mutate(EdLevel = fct_reorder(EdLevel, desc(-n))) %>%
     ggplot( aes(x=EdLevel, y=n)) + 
-      geom_bar(stat='identity') +
+      geom_bar(stat='identity', fill='steelblue') +
       xlab("") +
       coord_flip() +
       labs(y = 'Cumulative Number', title= 'Educational Attainment')
