@@ -20,7 +20,6 @@ dbGetByCol <- function(col, db = standardDB, includeNA=FALSE) {
         "SELECT ", col, " FROM ", db, ";")
       ))
   }
-  
 }
 
 dbGetByQuery <- function(query) {
