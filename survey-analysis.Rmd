@@ -116,19 +116,75 @@ dT %>%
     geom_bar(fill='steelblue')+ 
     xlab("Dev Type") +
     coord_flip() +
-    labs(y = 'Count', title= 'Developer Types')
+    labs(title = "Developer Types",
+         subtitle = paste0("All Respondents (", nrow(devTypes) ,")"),
+         y = 'Count')
+```
+
+
+## Job Satisfactory
+```{r}
+
+sat <- dbGetByCol(
+  col = "JobSat"
+)
+
+# Plot Overall Satisfactory
+sat %>% count(JobSat) %>% arrange(n) %>% mutate(pct = prop.table(n), JobSat = fct_reorder(JobSat, n)) %>%
+  ggplot(aes(
+    x=JobSat, 
+    y=n,
+    label= scales::percent(pct))) +
+    
+    geom_col(position = 'dodge', fill = 'steelblue') + 
+    geom_text(position = position_dodge(width = .9),    # move to center of bars
+              vjust = 0.5,    # nudge above top of bar
+              size = 3) + 
+    xlab("Level of Job Satisfactory") +
+    ylab("Amount of Respondents") +
+    labs(title = "Overall Satisfactory",
+         subtitle = paste0("All Respondents (", nrow(sat) ,")")) +
+    coord_flip()
+
+# Plot Satisfactory dependent with educational attainment
+
+satByEdu <- dbGetByQuery(
+  query = "SELECT count(JobSat) as cJobSat,JobSat,EdLevel
+FROM survey_results_public
+WHERE JobSat IS NOT NULL
+AND EdLevel IS NOT NULL
+GROUP BY JobSat, EdLevel
+ORDER BY cJobSat DESC;" 
+)
+
+satByEdu[,"cJobSat"] <- as.integer(satByEdu[,"cJobSat"])
+
+satByEdu %>% 
+  ggplot(aes(
+    x = JobSat,
+    y = cJobSat,
+    fill = EdLevel
+  )) + geom_bar(stat = "identity") + 
+  theme(legend.position="bottom", 
+        legend.box="vertical", 
+        legend.margin=margin()
+        ) +
+  ylab("Count") + xlab("Level of Satisfaction") +
+  labs(
+    fill = "Educational Attainment",
+    title = "Overall Satisfactory by Educational Attainment",
+    subtitle = paste0("All Respondents (", sum(satByEdu$cJobSat) ,")")
+  ) + coord_flip()
 
 ```
+
+
 
 ## Coding as a hobby
 
 Many developers work on code outside of work. About 78% of our respondents say that they code as a hobby. Other responsibilities outside of software can reduce developers' engagement in coding as a hobby; developers who say they have children or other caretaking responsibilities are less likely to code as a hobby. Respondents who are women are also less likely to say they code as a hobby.
 
 ```{r}
-hobby <- dbGetByCol(
-  col = "Hobbyist"
-)
-
 hobby <- dbGetByQuery("SELECT 
 Hobbyist, 
 count(Hobbyist) as CountHobbyist, 
@@ -155,7 +211,11 @@ gg_hobby <- ggplot(data = data.frame(), aes(x = Hobbyist,
   geom_text(position = position_dodge(width = .9),    # move to center of bars
               vjust = -0.5,    # nudge above top of bar
               size = 3) + 
-  labs(x = 'Hobbyist', y = NULL, fill='Gender', title='Amount of Hobbyists by Gender')
+  labs(x = 'Hobbyist', 
+       y = NULL, 
+       fill= 'Gender', 
+       title= 'Amount of Hobbyists by Gender',
+       subtitle= paste0("All Respondents (", sum(hobby$CountHobbyist) ,")"))
 
 # Add data after
 gg_hobby %+%
@@ -174,6 +234,8 @@ There is a wide range of experience among developers who visit Stack Overflow, f
 exp <- dbGetByCol(
   col = "YearsCode"
 )
+
+
 
 # Create new dataframe for storage
 newExp <- data.frame()
@@ -206,16 +268,15 @@ newExp$perc <- perc(newExp$n, sum(exp$n))
 # Move idx names to a col
 newExp$desc <- rownames(newExp)
 
-# TODO fix order of plotting
-# newExp$desc <- factor(newExp$desc, levels= newExp$desc[order(newExp$perc)])
-
 newExp %>%
   mutate(desc = fct_reorder(desc, desc(-n))) %>%
   ggplot(aes(x= desc, y= perc)) + 
     geom_bar(stat='identity', fill='steelblue') +
     xlab("") +
     coord_flip() + 
-    labs(y = 'Percentage', title='Years since learning to Code')
+    labs(y = 'Percentage', 
+         title='Years since learning to Code',
+         subtitle = paste0("All Respondents (", nrow(exp) ,")"))
 
 ```
 
@@ -277,7 +338,8 @@ newFCode %>%
     geom_bar(stat='identity', fill='steelblue') +
     xlab("") +
     coord_flip() + 
-    labs(y = 'Percentage', title='Writing That First Line of Code')
+    labs(y = 'Percentage', title='Writing That First Line of Code',
+         subtitle = paste0("All Respondents (", nrow(fcode) ,")"))
 ```
 ```{r}
 
@@ -307,7 +369,8 @@ edu %>%
       geom_bar(stat='identity', fill='steelblue') +
       xlab("") +
       coord_flip() +
-      labs(y = 'Cumulative Number', title= 'Educational Attainment')
+      labs(y = 'Cumulative Number', title= 'Educational Attainment',
+           subtitle = paste0("All Respondents (", nrow(edu) ,")"))
 
 ```
 
@@ -324,6 +387,59 @@ There are a variety of academic paths to becoming a professional software develo
 ```
 
 
+# Salary
+
+```{r}
+
+salaryByDevType <- dbGetByQuery(query = "SELECT DevType, Gender, CompTotal
+FROM survey_results_public
+WHERE GENDER = 'Woman' OR GENDER = 'Man'
+AND CONCAT(DevType, Gender, CompTotal) IS NOT NULL
+AND CompTotal > 20000 AND CompTotal < 500000;")
+
+
+salaryByDevType <- separate(data = salaryByDevType, col = DevType, sep = (";"), into=c(LETTERS[1:8]), extra = "drop", fill = "right")
+
+d = c()
+g = c()
+s = c()
+
+for (col in 1:8) {
+  for (row in 0:nrow(salaryByDevType)) {
+    d <- c(d, salaryByDevType[row, col])
+    g <- c(g, salaryByDevType[row, "Gender"])
+    s <- c(s, salaryByDevType[row, "CompTotal"])
+  }
+}
+
+# Create data frame from three vectors
+df <- data.frame(d,g,s) %>% na.omit()
+
+# Set colnames
+colnames(df) <- c("DevType", "Gender", "Salary")
+
+# Change col type
+df$Salary <- as.integer(df$Salary)
+
+# Compute amount of occurrences
+count <- ddply(df, .(df$DevType, df$Gender), nrow)["V1"]
+
+# Compute mean salary and group by DevType and Gender
+df <- df %>% group_by(DevType, Gender) %>% summarise(Salary = mean(Salary)) 
+
+df["Count"] <- count
+
+# Deselect all values below 500k - its unreal to have a mean above it
+df <- df[which(df$Salary < 200000), ] 
+
+# df <- df[which(df$Count < 250), ]
+
+df %>% ggplot(aes(
+  x = Count,
+  y = Salary
+)) + geom_point() + geom_label(label=df$DevType, aes(colour = Gender), vjust = "inward", hjust = "inward" )
+
+```
 
 
 
