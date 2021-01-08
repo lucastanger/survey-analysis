@@ -40,5 +40,10 @@ library(scales)
 library('ggthemes')
 library("ggplot2")
 
+require("ggrepel")
+
+library(hrbrthemes)
+library(viridis)
+
 theme_set(theme_gray())
 
