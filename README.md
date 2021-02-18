@@ -1,6 +1,5 @@
 # :card_file_box: Stackoverflow Developer Survey Analysis using R
 
-![Requires.io](https://img.shields.io/requires/github/lucastanger/survey-analysis)
 ![GitHub](https://img.shields.io/github/license/lucastanger/survey-analysis)
 ![GitHub Repo stars](https://img.shields.io/github/stars/lucastanger/survey-analysis)
 ![GitHub last commit](https://img.shields.io/github/last-commit/lucastanger/survey-analysis)
